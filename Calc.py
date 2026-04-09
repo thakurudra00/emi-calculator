@@ -1,13 +1,12 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+from flask import Flask, request, jsonify, render_template
+import os
 
 app = Flask(__name__)
-CORS(app)  # allows frontend to connect
 
 # EMI Calculation Function
 def calculate_emi(p, r, y):
-    r = r / (12 * 100)   # monthly interest
-    n = y * 12           # total months
+    r = r / (12 * 100)
+    n = y * 12
     x = (1 + r) ** n
 
     emi = (p * r * x) / (x - 1)
@@ -15,6 +14,12 @@ def calculate_emi(p, r, y):
     interest = total - p
 
     return emi, interest, total
+
+
+# Serve Frontend
+@app.route('/')
+def home():
+    return render_template("index.html")
 
 
 # API Route
@@ -39,12 +44,7 @@ def calculate():
         return jsonify({"error": str(e)}), 400
 
 
-# Home route (optional - to check server)
-@app.route('/')
-def home():
-    return "EMI Calculator Backend is Running 🚀"
-
-
-# Run server
+# Run App (Render compatible)
 if __name__ == "__main__":
-    app.run(debug=True, port=5050)
+    port = int(os.environ.get("PORT", 5050))  # Render gives this
+    app.run(host="0.0.0.0", port=port)
